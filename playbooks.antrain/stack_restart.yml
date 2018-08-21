@@ -1,0 +1,32 @@
+---
+  - hosts: loadbalancer
+    become: true
+    tasks:
+      - service: name=nginx state=stopped
+      - wait_for: port=80 state=drained
+      #checks to make sure it's stopped and all connections are drained down!
+
+  - hosts: webserver
+    become: true
+    tasks:
+      - service: name=httpd state=stopped
+      - wait_for: port=80 state=stopped
+
+  - hosts: database
+    become: true
+    tasks:
+      - service: name=mysqld state=restarted
+      - wait_for: host={{ ansible_eth0.ipv4.address }} port=3306 state=started
+
+  - hosts: webserver
+    become: true
+    tasks:
+      - service: name=httpd state=started
+      - wait_for: port=80
+      #started is the default so you can leave it off
+
+  - hosts: loadbalancer
+    become: true
+    tasks:
+      - service: name=nginx state=started
+      - wait_for: port=80

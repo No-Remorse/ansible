@@ -1,0 +1,8 @@
+---
+  - hosts: all
+    tasks:
+      - name: Firewalld Config
+        systemd:
+          state: stopped
+          name: firewalld
+          enabled: no

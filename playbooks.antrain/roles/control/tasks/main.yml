@@ -1,0 +1,19 @@
+---
+# tasks file for control
+- name: Install Tools
+  apt:
+    name={{ item }}
+    state=present
+
+  with_items:
+    - curl
+    - python-httplib2
+
+  tags: ['packages']
+
+- name: Mount SplunkNas
+  mount:
+    path: /mnt/splunknas
+    src: housenas02:/splunkdata
+    state: mounted
+    fstype: nfs

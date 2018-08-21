@@ -1,0 +1,56 @@
+---
+# note: before installation must install EPEL (Extra Packages for Enterprise Linux)
+# RPM thru following command:
+# yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+  - hosts: webserver
+    become: true
+    tasks:
+      - name: install web components
+        yum:
+          name={{ item }}
+          state=present
+          update_cache=yes
+        with_items:
+          - httpd
+          - mod_wsgi
+          - python2-pip
+          - python-virtualenv
+
+      - name: create sites available directory
+        file:
+          path: /etc/httpd/sites-enabled/
+          state: directory
+
+      - name: Validate httpd started
+        service: name=httpd state=started enabled=yes
+
+      - name: validate mod_wsgi enabled
+        apache2_module: state=present name=wsgi
+        notify: resart httpd
+
+      - name: copy demo app source
+        copy: src=demo/app/ dest=/var/www/demo mode=0755
+        notify: restart httpd
+
+      - name: copy virtualhost config
+        copy: src=demo/demo.conf dest=/etc/httpd/sites-available/ mode=0755
+        notify: restart httpd
+
+      - name: setup python virtualenv
+        pip: requirements=/var/www/demo/requirements.txt virtualenv=/var/www/demo/.venv
+        notify: restart httpd
+
+      - name: modify http.conf for virtualenv
+        lineinfile:
+          path: /etc/httpd/conf/httpd.conf
+          line: 'IncludeOptional sites-enabled/*.conf'
+        notify: restart httpd
+
+      - name: activate demo apache site
+        file: src=/etc/httpd/sites-available/demo.conf dest=/etc/httpd/sites-enabled/demo.conf state=link
+        notify: restart httpd
+
+    handlers:
+      - name: restart httpd
+        service: name=httpd state=restarted

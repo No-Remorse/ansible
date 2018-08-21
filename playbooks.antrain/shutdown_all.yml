@@ -1,0 +1,11 @@
+---
+  - hosts: all
+    gather_facts: no
+
+    tasks:
+      - name: shutdown
+        command: /sbin/shutdown -h now
+
+      #- name: wait for shutdown
+      #  local_action:  wait_for host={{ }} port=22 state=stopped
+      # this should be a change in this file

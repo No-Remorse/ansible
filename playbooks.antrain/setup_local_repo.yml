@@ -1,0 +1,44 @@
+---
+  - hosts: control
+    tasks:
+      - name: mount dvd
+        mount:
+          path: /cdrom
+          src: /dev/sr0
+          state: mounted
+          fstype: iso9660
+          opts: ro
+
+      - name: Copy rhel7 repo file
+        copy:
+          src: /cdrom/media.repo
+          dest: /etc/yum.repos.d/
+          mode: '0644'
+          remote_src: yes
+
+      - name: Mod repo parms
+        lineinfile:
+          path: /etc/yum.repos.d/media.repo
+          regexp: '^gpgcheck='
+          line:  'gpgcheck=1'
+
+      - name: Insert repo information into /etc/yum.repos.d/media.repo
+        blockinfile:
+          path: /etc/yum.repos.d/media.repo
+          insertafter: 'cost'
+          block: |
+            enabled=1
+            baseurl=file:///cdrom/
+            gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+      - name: Clear the related YUM caches
+        command: "yum clean all"
+
+      - name: Clean subscription manager
+        command: "subscription-manager clean"
+
+      - name: UnMount CDROM
+        mount:
+          path: /cdrom
+          src: /dev/sr0
+          state: absent

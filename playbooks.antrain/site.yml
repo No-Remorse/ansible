@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: update apt cache
+      apt: update_cache=yes cach_valid_time=86400
+      tags: ['packages']
+
+- include: setup_control.yml
+- include: setup_database.yml
+- include: setup_webserver.yml
+- include: setup_lb.yml

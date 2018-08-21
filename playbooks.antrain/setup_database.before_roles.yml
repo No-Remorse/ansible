@@ -1,0 +1,5 @@
+---
+  - hosts: database
+    become: true  #running at the play vs. task level
+    roles:
+      - mysql

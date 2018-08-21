@@ -1,0 +1,12 @@
+---
+- hosts: database
+  become: true
+  roles:  #this method is using the group_vars to pick up variable information
+    - role: mysql
+      db_user_name: "{{ db_user }}"
+      db_user_pass: "{{ db_pass }}"
+      db_user_host: '%'
+
+
+    # this method is for doing a role include for variable names
+    # - { role: mysql, db_name: demo, db_user_name: demo, db_user_pass: demo, db_user_host: '%' }
